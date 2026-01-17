@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Architect Command Console | Legacy Grove Codex</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font: Noto Sans (Clean, Professional, Legible) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: Warm Neutrals & Sovereign Authority -->
+    <!-- Background: #F5F2EB (Warm Sand/Paper) -->
+    <!-- Primary Text: #1F2937 (Charcoal/Ink) -->
+    <!-- Accents: #8C7851 (Antique Gold/Bronze - Throne), #4B5563 (Slate - Structure), #9F4135 (Muted Red - Defense) -->
+    
+    <!-- Application Structure Plan: 
+         The app is designed as a "Sovereign Operating System" (SOS) dashboard.
+         1. **Global Sidebar**: Persistent navigation through the 5-Layer Architecture (Core, Throne, Vault, Machines, Defense).
+         2. **Top Control Bar**: "Phase Selector" (Dormant, Burst, Structuring, Release) - this is the "Heartbeat" of the system, changing context.
+         3. **Dashboard (Home)**: High-level telemetry. Radar chart for system balance.
+         4. **The Vault (Engine A)**: Asset management for the user's specific creative domains (Legacy Grove, Flow State, etc.).
+         5. **Money Machines (Engine B)**: The "Freedom Protocol" calculator lives here to vet new ventures.
+         6. **Defense Systems**: Risk monitoring (Mental Load vs. Automations).
+         7. **Digital Estate**: The "Digital Vault Blueprint" checklist implementation.
+         
+         Rationale: This structure forces the user to categorize every action into the correct "Layer," preventing the "hustle" from bleeding into the "creative" or "defense" zones.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. **Radar Chart (Dashboard)**: Chosen to show the *balance* of the 5 Layers. If one spikes (e.g., too much Money Machine focus), others (Sovereignty) might shrink.
+         2. **Freedom Protocol (Interactive Form)**: Not a chart, but a logic gate. User inputs idea -> System outputs "Approved" or "Vetoed". Essential for the "Architect" mindset.
+         3. **Doughnut Chart (Vault)**: Visualizes the distribution of creative focus across domains (Legacy Grove vs. Star Seeds).
+         4. **Progress Bars (Digital Estate)**: Linear progress tracking for the "Break Glass" blueprint tasks.
+         5. **Line Chart (Defense)**: "Mental Load" tracking over time.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            background-color: #F5F2EB; /* Warm Sand */
+            color: #1F2937;
+        }
+
+        /* Chart Container Styling - Mandatory for Responsiveness */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 300px;
+            margin: 0 auto;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #E5E7EB; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9CA3AF; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6B7280; 
+        }
+
+        .active-nav {
+            background-color: #E5E7EB;
+            border-left: 4px solid #8C7851;
+            font-weight: 600;
+        }
+
+        .phase-badge {
+            transition: all 0.3s ease;
+        }
+        
+        /* Utility for card hover effects */
+        .sov-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .sov-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm hidden md:flex z-20">
+        <div class="p-6 border-b border-gray-100 flex flex-col items-center text-center">
+            <h1 class="text-xl font-bold tracking-tight text-gray-800">LEGACY GROVE<br><span class="text-sm font-normal text-gray-500">CODEX SYSTEM</span></h1>
+            <div class="mt-2 text-xs uppercase tracking-widest text-[#8C7851] font-bold">Sovereign Architecture</div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4 space-y-1">
+            <button onclick="navTo('dashboard')" id="nav-dashboard" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 active-nav transition-colors flex items-center">
+                <span class="mr-3">◈</span> Command Dashboard
+            </button>
+            
+            <div class="px-6 pt-4 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Engine A: Creative</div>
+            <button onclick="navTo('vault')" id="nav-vault" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center">
+                <span class="mr-3">✦</span> The Vault
+            </button>
+
+            <div class="px-6 pt-4 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Engine B: Financial</div>
+            <button onclick="navTo('machines')" id="nav-machines" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center">
+                <span class="mr-3">⚙</span> Money Machines
+            </button>
+
+            <div class="px-6 pt-4 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Protection</div>
+            <button onclick="navTo('defense')" id="nav-defense" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center">
+                <span class="mr-3">🛡</span> Defense Systems
+            </button>
+            <button onclick="navTo('estate')" id="nav-estate" class="w-full text-left px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center">
+                <span class="mr-3">⚓</span> Digital Estate
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-gray-200 bg-gray-50">
+            <div class="flex items-center">
+                <div class="h-8 w-8 rounded-full bg-[#8C7851] flex items-center justify-center text-white font-bold text-xs">SA</div>
+                <div class="ml-3">
+                    <p class="text-xs font-medium text-gray-700">Sovereign Architect</p>
+                    <p class="text-[10px] text-gray-500">Access Level: Master</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MOBILE MENU OVERLAY (Hidden by default) -->
+    <div id="mobile-menu" class="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 hidden" onclick="toggleMobileMenu()">
+        <div class="w-64 bg-white h-full shadow-xl p-4">
+            <div class="mb-6 font-bold text-lg">Menu</div>
+            <!-- Mobile nav items duplicated here by JS or simple HTML structure -->
+            <button onclick="navTo('dashboard')" class="block w-full text-left py-2 border-b">Dashboard</button>
+            <button onclick="navTo('vault')" class="block w-full text-left py-2 border-b">The Vault</button>
+            <button onclick="navTo('machines')" class="block w-full text-left py-2 border-b">Money Machines</button>
+            <button onclick="navTo('defense')" class="block w-full text-left py-2 border-b">Defense Systems</button>
+            <button onclick="navTo('estate')" class="block w-full text-left py-2 border-b">Digital Estate</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        
+        <!-- TOP BAR: Phase Control -->
+        <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-8 shrink-0">
+            <div class="flex items-center md:hidden">
+                <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-gray-700">
+                    <span class="text-2xl">☰</span>
+                </button>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <span class="text-xs font-bold text-gray-400 uppercase hidden sm:inline-block">Operational Phase:</span>
+                <div class="flex bg-gray-100 rounded-lg p-1">
+                    <button onclick="setPhase('dormant')" id="btn-dormant" class="phase-btn px-3 py-1 text-xs font-medium rounded-md transition-colors text-gray-600 hover:text-gray-900">Dormant</button>
+                    <button onclick="setPhase('burst')" id="btn-burst" class="phase-btn px-3 py-1 text-xs font-medium rounded-md transition-colors text-gray-600 hover:text-gray-900">Burst</button>
+                    <button onclick="setPhase('structuring')" id="btn-structuring" class="phase-btn px-3 py-1 text-xs font-medium rounded-md transition-colors bg-white shadow-sm text-gray-900">Structuring</button>
+                    <button onclick="setPhase('release')" id="btn-release" class="phase-btn px-3 py-1 text-xs font-medium rounded-md transition-colors text-gray-600 hover:text-gray-900">Release</button>
+                </div>
+            </div>
+
+            <div class="flex items-center">
+                <div id="agent-status" class="flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium border border-green-100">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                    Systems Nominal
+                </div>
+            </div>
+        </header>
+
+        <!-- SCROLLABLE CONTENT -->
+        <div class="flex-1 overflow-y-auto bg-[#F5F2EB] p-4 sm:p-8 relative">
+            
+            <!-- SECTION: DASHBOARD -->
+            <section id="view-dashboard" class="space-y-6 max-w-6xl mx-auto block fade-in">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">Command Dashboard</h2>
+                    <p class="text-gray-600 mt-1 max-w-2xl">
+                        Welcome, Architect. This view provides high-level telemetry on your Five-Layer Architecture. 
+                        Monitor the balance between creative generation (Engine A) and financial capture (Engine B) here.
+                    </p>
+                </div>
+
+                <!-- Metric Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="sov-card bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                        <div class="text-xs font-bold text-gray-400 uppercase mb-1">Total Asset Count</div>
+                        <div class="text-3xl font-bold text-gray-800" id="stat-assets">12</div>
+                        <div class="text-xs text-green-600 mt-2 font-medium">↑ 2 in Drafting</div>
+                    </div>
+                    <div class="sov-card bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                        <div class="text-xs font-bold text-gray-400 uppercase mb-1">Automated Revenue</div>
+                        <div class="text-3xl font-bold text-gray-800">0%</div>
+                        <div class="text-xs text-gray-500 mt-2">Target: 80%</div>
+                    </div>
+                    <div class="sov-card bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                        <div class="text-xs font-bold text-gray-400 uppercase mb-1">Mental Load</div>
+                        <div class="text-3xl font-bold text-yellow-600" id="stat-load">45%</div>
+                        <div class="text-xs text-yellow-700 mt-2 font-medium">Optimal Range</div>
+                    </div>
+                    <div class="sov-card bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                        <div class="text-xs font-bold text-gray-400 uppercase mb-1">Digital Vault</div>
+                        <div class="text-3xl font-bold text-[#8C7851]" id="stat-vault">15%</div>
+                        <div class="text-xs text-gray-500 mt-2">Secure Status</div>
+                    </div>
+                </div>
+
+                <!-- Main Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Radar Chart: System Balance -->
+                    <div class="lg:col-span-1 bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col">
+                        <h3 class="font-bold text-gray-800 mb-2">Architectural Balance</h3>
+                        <p class="text-xs text-gray-500 mb-4">Five-Layer Health Status</p>
+                        <div class="chart-container flex-grow">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Task / Phase Context -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-bold text-gray-800">Current Phase Directives</h3>
+                                <p class="text-xs text-gray-500" id="phase-subtitle">Structuring Phase Active</p>
+                            </div>
+                            <span class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded border border-blue-100" id="agent-badge">Burst Assistant Active</span>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-4">
+                            <h4 class="font-semibold text-sm text-gray-700 mb-2">Agent Advice:</h4>
+                            <p class="text-sm text-gray-600 italic" id="agent-text">
+                                "You are in the Structuring Phase. Stop generating raw ideas. Focus on modularizing 'Legacy Grove Codex' into repeatable frameworks. Do not launch new products yet."
+                            </p>
+                        </div>
+
+                        <h4 class="font-semibold text-sm text-gray-700 mb-3">Priority Actions</h4>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-sm text-gray-600">
+                                <span class="w-4 h-4 rounded-full border border-gray-300 mr-3 flex-shrink-0"></span>
+                                Complete "Freedom Protocol" check for Flow State project.
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <span class="w-4 h-4 rounded-full border border-gray-300 mr-3 flex-shrink-0"></span>
+                                Update "Emergency Contacts" in Digital Vault.
+                            </li>
+                            <li class="flex items-center text-sm text-gray-600">
+                                <span class="w-4 h-4 rounded-full border border-gray-300 mr-3 flex-shrink-0"></span>
+                                Review ROI on currently deployed PDFs.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: THE VAULT (ENGINE A) -->
+            <section id="view-vault" class="space-y-6 max-w-6xl mx-auto hidden fade-in">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">The Vault (Engine A)</h2>
+                    <p class="text-gray-600 mt-1">
+                        This is your Creative Engine. Store, tag, and organize raw concepts here. 
+                        Remember: Assets in the Vault are *not* products yet. They are potential.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Project List -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-bold text-gray-700">Active Domains</h3>
+                            <button class="text-xs bg-[#8C7851] text-white px-3 py-1 rounded hover:bg-[#726241]">New Domain</button>
+                        </div>
+
+                        <!-- Card 1 -->
+                        <div class="bg-white p-4 rounded-lg border-l-4 border-[#8C7851] shadow-sm flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-gray-800">Legacy Grove Codex</h4>
+                                <p class="text-xs text-gray-500">Status: <span class="text-green-600 font-semibold">Live</span> | Type: Digital Product</p>
+                            </div>
+                            <button class="text-sm text-gray-400 hover:text-gray-600">Edit</button>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="bg-white p-4 rounded-lg border-l-4 border-blue-400 shadow-sm flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-gray-800">Flow State Systems</h4>
+                                <p class="text-xs text-gray-500">Status: <span class="text-blue-600 font-semibold">Structuring</span> | Type: Course/Guide</p>
+                            </div>
+                            <button class="text-sm text-gray-400 hover:text-gray-600">Edit</button>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="bg-white p-4 rounded-lg border-l-4 border-gray-300 shadow-sm flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-gray-800">Frequency & Vibration</h4>
+                                <p class="text-xs text-gray-500">Status: <span class="text-gray-600 font-semibold">Dormant</span> | Type: Research</p>
+                            </div>
+                            <button class="text-sm text-gray-400 hover:text-gray-600">Edit</button>
+                        </div>
+
+                        <!-- Card 4 -->
+                        <div class="bg-white p-4 rounded-lg border-l-4 border-purple-400 shadow-sm flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-gray-800">Star Seeds</h4>
+                                <p class="text-xs text-gray-500">Status: <span class="text-purple-600 font-semibold">Burst (Idea Generation)</span> | Type: Book?</p>
+                            </div>
+                            <button class="text-sm text-gray-400 hover:text-gray-600">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Asset Visualization -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                        <h3 class="font-bold text-gray-800 mb-4 text-center">Portfolio Distribution</h3>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="vaultDoughnut"></canvas>
+                        </div>
+                        <div class="mt-4 text-xs text-gray-500 text-center">
+                            Warning: "Star Seeds" is consuming 30% of creative energy but has 0% ROI.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Idea Organizer Tool -->
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mt-6">
+                    <h3 class="font-bold text-gray-800 mb-3">Idea Organizer (AI Agent 1)</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" placeholder="Deposit raw idea here..." class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#8C7851]">
+                        <button class="bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-700">Deposit</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">#Legacy</span>
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">#Automation</span>
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">#Sovereignty</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: MONEY MACHINES (ENGINE B) -->
+            <section id="view-machines" class="space-y-6 max-w-6xl mx-auto hidden fade-in">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Money Machines (Engine B)</h2>
+                    <p class="text-gray-600 mt-1">
+                        This is the domain of the Financial Converter. Projects enter here only after passing the Freedom Protocol.
+                        Your goal is scalable, killable, modular entities.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Freedom Protocol Validator -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-md">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-800 text-lg">The Freedom Protocol</h3>
+                            <span class="text-xs font-mono bg-gray-100 px-2 py-1 rounded">V.2.0</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-6 border-b pb-4">
+                            Mandatory check before moving any Vault asset to Engine B. If the answer is "No", it is a design flaw.
+                        </p>
+                        
+                        <div class="space-y-4" id="protocol-form">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                                <input type="text" id="fp-name" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Star Seeds Workshop">
+                            </div>
+                            
+                            <div class="flex items-start space-x-3">
+                                <input type="checkbox" id="fp-q1" class="mt-1">
+                                <div>
+                                    <label class="text-sm font-bold text-gray-800">Can I step away for 30 days without collapse?</label>
+                                    <p class="text-xs text-gray-500">Does it require your daily presence?</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3">
+                                <input type="checkbox" id="fp-q2" class="mt-1">
+                                <div>
+                                    <label class="text-sm font-bold text-gray-800">Can the delivery be automated?</label>
+                                    <p class="text-xs text-gray-500">Is it digital/scalable or labor-intensive?</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3">
+                                <input type="checkbox" id="fp-q3" class="mt-1">
+                                <div>
+                                    <label class="text-sm font-bold text-gray-800">Can it be paused indefinitely?</label>
+                                    <p class="text-xs text-gray-500">Are there ongoing liabilities if you stop?</p>
+                                </div>
+                            </div>
+
+                            <button onclick="runProtocol()" class="w-full bg-[#8C7851] text-white font-bold py-3 rounded mt-4 hover:bg-[#726241] transition-colors">
+                                RUN VALIDATION
+                            </button>
+                        </div>
+
+                        <!-- Result Area -->
+                        <div id="fp-result" class="hidden mt-6 p-4 rounded border">
+                            <!-- JS will populate -->
+                        </div>
+                    </div>
+
+                    <!-- Revenue Engine Simulator -->
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                            <h3 class="font-bold text-gray-800 mb-2">Revenue Streams</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                    <span class="text-sm font-medium">Digital Vault Blueprint (PDF)</span>
+                                    <span class="text-sm font-bold text-green-600">$ Active</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded opacity-50">
+                                    <span class="text-sm font-medium">Flow State Course</span>
+                                    <span class="text-sm font-bold text-gray-500">In Development</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                            <h3 class="font-bold text-blue-900 mb-2">Automated Systems Check</h3>
+                            <ul class="text-sm text-blue-800 space-y-2">
+                                <li>✓ Stripe Payment Gateway</li>
+                                <li>✓ Digital Delivery (Email)</li>
+                                <li>⚠ Customer Support (Manual - Risk!)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: DEFENSE (RISK) -->
+            <section id="view-defense" class="space-y-6 max-w-6xl mx-auto hidden fade-in">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Defense Systems</h2>
+                    <p class="text-gray-600 mt-1">
+                        Monitor for legal, financial, and operational risks. The goal is "Permanent Control" and "Minimal Exposure."
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                        <h3 class="font-bold text-gray-800 mb-4">Mental Load Monitor (Burnout Prevention)</h3>
+                        <div class="chart-container">
+                            <canvas id="defenseLineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Exposure Risk -->
+                        <div class="bg-white p-6 rounded-xl border border-l-4 border-red-500 shadow-sm">
+                            <h3 class="font-bold text-gray-800 mb-2">Exposure Risks</h3>
+                            <ul class="space-y-3 text-sm">
+                                <li class="flex items-start">
+                                    <span class="text-red-500 mr-2">⚠</span>
+                                    <span class="text-gray-600">Personal email used for business domains.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-red-500 mr-2">⚠</span>
+                                    <span class="text-gray-600">Home address visible on WhoIs registry.</span>
+                                </li>
+                            </ul>
+                            <button class="mt-4 text-xs text-red-600 font-bold uppercase hover:underline">View Mitigation Plan</button>
+                        </div>
+
+                        <!-- Legal Shield -->
+                        <div class="bg-white p-6 rounded-xl border border-l-4 border-green-500 shadow-sm">
+                            <h3 class="font-bold text-gray-800 mb-2">The Throne (Holding)</h3>
+                            <div class="text-sm text-gray-600 mb-2">
+                                <p class="font-semibold">Legacy Grove Codex LLC</p>
+                                <p>Status: Active</p>
+                                <p>IP Assignment: <span class="text-green-600">Complete</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: DIGITAL ESTATE (BLUEPRINT) -->
+            <section id="view-estate" class="space-y-6 max-w-6xl mx-auto hidden fade-in">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Digital Estate Blueprint</h2>
+                    <p class="text-gray-600 mt-1">
+                        "Break Glass in Case of Emergency." Ensure your digital legacy is secure and transferable.
+                    </p>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-bold text-xl text-gray-800">The 6 Pillars Checklist</h3>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-[#8C7851]">15%</div>
+                            <div class="text-xs text-gray-500">Completion</div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-8">
+                        <div class="bg-[#8C7851] h-2.5 rounded-full" style="width: 15%"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Pillar 1 -->
+                        <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" class="w-4 h-4 text-[#8C7851] rounded mr-3">
+                                <h4 class="font-bold text-gray-800">1. Master Identity</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 ml-7">Email, Phone, 2FA Backups, Password Manager Master Key.</p>
+                        </div>
+
+                        <!-- Pillar 2 -->
+                        <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" class="w-4 h-4 text-[#8C7851] rounded mr-3">
+                                <h4 class="font-bold text-gray-800">2. Financial Access</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 ml-7">Bank Accounts, Crypto Wallets, Trading Platforms.</p>
+                        </div>
+
+                        <!-- Pillar 3 -->
+                        <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" class="w-4 h-4 text-[#8C7851] rounded mr-3">
+                                <h4 class="font-bold text-gray-800">3. Device Access</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 ml-7">Phone PINs, Computer Logins, Tablet codes.</p>
+                        </div>
+
+                        <!-- Pillar 4 -->
+                        <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" class="w-4 h-4 text-[#8C7851] rounded mr-3">
+                                <h4 class="font-bold text-gray-800">4. Critical Docs</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 ml-7">Deeds, LLC Formations, Insurance, Tax Records.</p>
+                        </div>
+                         <!-- Pillar 5 -->
+                         <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" class="w-4 h-4 text-[#8C7851] rounded mr-3">
+                                <h4 class="font-bold text-gray-800">5. Social & Business</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 ml-7">Domain Registrars, Social Handles, Hosting.</p>
+                        </div>
+
+                         <!-- Pillar 6 -->
+                         <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" class="w-4 h-4 text-[#8C7851] rounded mr-3">
+                                <h4 class="font-bold text-gray-800">6. Personal Legacy</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 ml-7">Photos, Letters, Journals, Archives.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 bg-yellow-50 p-4 rounded border border-yellow-100 flex items-start">
+                        <span class="text-xl mr-3">📅</span>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">Next Annual Pulse Check</h4>
+                            <p class="text-xs text-gray-600">Set reminder for: <strong>January 15, 2027</strong>. Your vault must change as your life changes.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // --- NAVIGATION LOGIC ---
+        function navTo(viewId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('section');
+            sections.forEach(s => s.classList.add('hidden'));
+            
+            // Show target
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+            // Update Nav State
+            const navButtons = document.querySelectorAll('nav button');
+            navButtons.forEach(b => b.classList.remove('active-nav', 'bg-gray-50'));
+            
+            const activeBtn = document.getElementById(`nav-${viewId}`);
+            if(activeBtn) activeBtn.classList.add('active-nav', 'bg-gray-50');
+
+            // Close mobile menu if open
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // --- PHASE LOGIC ---
+        // Data for the Agent Advice based on phase
+        const phaseData = {
+            dormant: {
+                subtitle: "System Resting. Observation Mode.",
+                badge: "Idea Organizer Active",
+                text: "The system is in low-power mode. Observe the market. Do not build. Capture raw inputs only. Protect your energy.",
+                load: "15%"
+            },
+            burst: {
+                subtitle: "High Output Mode. 4-Hour Sprints.",
+                badge: "Burst Assistant Active",
+                text: "You are in a creation sprint. Ignore email. Ignore admin. Focus purely on generating the raw assets for 'Star Seeds'. Stop when the timer ends.",
+                load: "85%"
+            },
+            structuring: {
+                subtitle: "Organization & Modularization.",
+                badge: "Architect Mode Active",
+                text: "Stop generating. Start organizing. Turn the raw output from the Burst phase into repeatable frameworks. Document the process.",
+                load: "45%"
+            },
+            release: {
+                subtitle: "Deployment & Monetization.",
+                badge: "Revenue Engine Active",
+                text: "Push to market. Turn on the marketing funnels. Monitor the dashboards. Do not tinker with the product anymore.",
+                load: "60%"
+            }
+        };
+
+        function setPhase(phase) {
+            // Update buttons
+            document.querySelectorAll('.phase-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-gray-900', 'font-bold');
+                btn.classList.add('text-gray-600');
+            });
+            const activeBtn = document.getElementById(`btn-${phase}`);
+            activeBtn.classList.add('bg-white', 'shadow-sm', 'text-gray-900', 'font-bold');
+            activeBtn.classList.remove('text-gray-600');
+
+            // Update Content
+            const data = phaseData[phase];
+            document.getElementById('phase-subtitle').innerText = data.subtitle;
+            document.getElementById('agent-badge').innerText = data.badge;
+            document.getElementById('agent-text').innerText = data.text;
+            document.getElementById('stat-load').innerText = data.load;
+
+            // Update color accents (visual feedback)
+            const header = document.querySelector('header');
+            if (phase === 'burst') header.classList.add('bg-orange-50');
+            else header.classList.remove('bg-orange-50');
+        }
+
+        // --- FREEDOM PROTOCOL LOGIC ---
+        function runProtocol() {
+            const name = document.getElementById('fp-name').value;
+            const q1 = document.getElementById('fp-q1').checked;
+            const q2 = document.getElementById('fp-q2').checked;
+            const q3 = document.getElementById('fp-q3').checked;
+            const resultDiv = document.getElementById('fp-result');
+
+            if (!name) {
+                alert("Please name the project.");
+                return;
+            }
+
+            resultDiv.classList.remove('hidden', 'bg-red-50', 'border-red-200', 'bg-green-50', 'border-green-200');
+            resultDiv.innerHTML = '';
+
+            if (q1 && q2 && q3) {
+                // Pass
+                resultDiv.classList.add('bg-green-50', 'border-green-200');
+                resultDiv.innerHTML = `
+                    <h4 class="text-green-800 font-bold flex items-center"><span class="text-xl mr-2">✓</span> APPROVED</h4>
+                    <p class="text-sm text-green-700 mt-1">"${name}" complies with the Freedom Protocol. It is scalable, killable, and automated. You may proceed to Engine B.</p>
+                `;
+            } else {
+                // Fail
+                resultDiv.classList.add('bg-red-50', 'border-red-200');
+                resultDiv.innerHTML = `
+                    <h4 class="text-red-800 font-bold flex items-center"><span class="text-xl mr-2">⚠</span> DESIGN FLAW DETECTED</h4>
+                    <p class="text-sm text-red-700 mt-1">"${name}" violates the Sovereign Architecture. It creates obligation, not freedom.</p>
+                    <ul class="list-disc list-inside text-xs text-red-600 mt-2">
+                        ${!q1 ? '<li>Requires your daily presence.</li>' : ''}
+                        ${!q2 ? '<li>Cannot be fully automated.</li>' : ''}
+                        ${!q3 ? '<li>Cannot be paused without consequence.</li>' : ''}
+                    </ul>
+                `;
+            }
+        }
+
+        // --- CHART CONFIGURATION ---
+        
+        // 1. Radar Chart: System Balance
+        const ctxRadar = document.getElementById('radarChart').getContext('2d');
+        const radarChart = new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Sovereign Core', 'The Throne (IP)', 'The Vault (Creative)', 'Money Machines', 'Defense Systems'],
+                datasets: [{
+                    label: 'System Health',
+                    data: [90, 80, 70, 40, 60], // Example data: Strong core/IP, weak money machines
+                    fill: true,
+                    backgroundColor: 'rgba(140, 120, 81, 0.2)', // Gold/Bronze
+                    borderColor: 'rgb(140, 120, 81)',
+                    pointBackgroundColor: 'rgb(140, 120, 81)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(140, 120, 81)'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    r: {
+                        angleLines: { color: '#E5E7EB' },
+                        grid: { color: '#E5E7EB' },
+                        pointLabels: {
+                            font: { family: 'Noto Sans', size: 10, weight: 'bold' },
+                            color: '#4B5563'
+                        },
+                        ticks: { display: false, max: 100 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 2. Doughnut Chart: Vault Distribution
+        const ctxDoughnut = document.getElementById('vaultDoughnut').getContext('2d');
+        new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Legacy Grove', 'Flow State', 'Frequency', 'Star Seeds'],
+                datasets: [{
+                    label: 'Energy Allocation',
+                    data: [40, 20, 10, 30],
+                    backgroundColor: [
+                        '#8C7851', // Primary Gold
+                        '#60A5FA', // Blue
+                        '#9CA3AF', // Gray
+                        '#C084FC'  // Purple
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6 } }
+                }
+            }
+        });
+
+        // 3. Line Chart: Defense (Mental Load)
+        const ctxLine = document.getElementById('defenseLineChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Mental Load Index',
+                    data: [30, 45, 80, 60, 45, 50], // Spiked in March
+                    borderColor: '#D97706', // Amber/Warning
+                    backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Automated Revenue',
+                    data: [10, 12, 15, 15, 18, 20], // Slow growth
+                    borderColor: '#059669', // Emerald
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: '#F3F4F6' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { position: 'top', align: 'end', labels: { boxWidth: 10 } }
+                }
+            }
+        });
+
+        // Initialize Phase
+        setPhase('structuring');
+
+    </script>
+</body>
+</html>
