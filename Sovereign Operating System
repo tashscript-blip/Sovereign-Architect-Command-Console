@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Architect | Operating System Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: "Electric Executive" -->
+    <!-- Primary: #4F46E5 (Indigo 600) - Vibrant Authority -->
+    <!-- Secondary: #0EA5E9 (Sky 500) - Clarity/Systems -->
+    <!-- Accent: #F97316 (Orange 500) - Energy/Action -->
+    <!-- Background: #F8FAFC (Slate 50) - Clean Workspace -->
+    <!-- Text: #1E293B (Slate 800) - High Contrast -->
+
+    <!-- Application Structure Plan: 
+        The SPA is designed as a "Headquarters Dashboard" for the Sovereign Architect. 
+        It flows from high-level Philosophy (Who you are) to Structural Architecture (How it works), 
+        to Operational Tools (Freedom Protocol), and finally Performance Metrics (Vault & Health).
+        
+        1. **Hero Section:** Sets the identity "Sovereign Architect".
+        2. **Architectural Blueprint (Interactive Diagram):** Users explore the 5 layers.
+        3. **Operational Core (Two Engines):** Visualizing the separation of Creative vs. Financial.
+        4. **The Freedom Protocol (Interactive Tool):** A functional validator for decision making.
+        5. **Digital Vault Status (Bar Chart):** Tracking the legacy protection progress.
+        6. **Asset Matrix (Scatter Plot):** Analyzing Money Machines vs. Mental Load.
+        7. **System Health (Radar Chart):** Overall balance of the sovereign life.
+    -->
+
+    <!-- Visualization & Content Choices:
+        1. **5-Layer Architecture -> Goal: Organize -> Method: Interactive HTML Stack (Tailwind).** Why: A vertical stack best represents the "Foundation to Defense" hierarchy. Interaction reveals details without clutter.
+        2. **Digital Vault Pillars -> Goal: Compare/Track -> Method: Bar Chart (Chart.js).** Why: Compares completion % across distinct categories (Identity, Financial, etc.).
+        3. **Asset Performance -> Goal: Relationships -> Method: Scatter Plot (Chart.js).** Why: Perfect for plotting "Mental Load" (Cost) vs "ROI" (Benefit) to identify "Killable" vs "Sovereign" assets.
+        4. **System Health -> Goal: Inform/Holistic -> Method: Radar Chart (Chart.js).** Why: Visualizes the multi-dimensional balance required (Control, Privacy, Revenue).
+        5. **Freedom Protocol -> Goal: Inform/Process -> Method: Interactive Form (JS).** Why: It's a logic gate, best represented by inputs and conditional outputs.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+        
+        /* Chart Container Styling - MANDATORY */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px; /* Max width to prevent stretching */
+            height: 350px;    /* Base height */
+            max-height: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .layer-btn {
+            transition: all 0.3s ease;
+        }
+        .layer-btn.active {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.4);
+            border-left-width: 8px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Navigation / Header -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-indigo-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-cyan-500">
+                        LEGACY GROVE
+                    </span>
+                    <span class="ml-2 text-xs font-bold text-slate-500 tracking-widest border border-slate-200 px-2 py-0.5 rounded">CODEX OS</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#architecture" class="text-sm font-medium text-slate-600 hover:text-indigo-600">Architecture</a>
+                    <a href="#protocol" class="text-sm font-medium text-slate-600 hover:text-indigo-600">Freedom Protocol</a>
+                    <a href="#vault" class="text-sm font-medium text-slate-600 hover:text-indigo-600">Digital Vault</a>
+                    <a href="#health" class="text-sm font-medium text-slate-600 hover:text-indigo-600">System Health</a>
+                </div>
+                <!-- Phase Indicator -->
+                <div class="flex items-center space-x-2">
+                    <span class="h-3 w-3 rounded-full bg-orange-500 animate-pulse"></span>
+                    <span class="text-xs font-bold text-slate-700">PHASE: STRUCTURING</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 text-white pt-16 pb-24 relative overflow-hidden">
+        <!-- Abstract Decoration (CSS only) -->
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-cyan-500 opacity-10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-indigo-500 opacity-20 blur-3xl"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
+                The Sovereign Architect
+            </h1>
+            <p class="text-xl md:text-2xl text-indigo-100 max-w-3xl mx-auto font-light">
+                Maximum Optionality. Minimal Exposure. Permanent Control.
+            </p>
+            <div class="mt-10 flex justify-center gap-4">
+                <a href="#protocol" class="px-8 py-3 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold transition shadow-lg shadow-orange-500/30">
+                    Run Freedom Protocol
+                </a>
+                <a href="#architecture" class="px-8 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold backdrop-blur border border-white/20 transition">
+                    View Blueprint
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-20 space-y-20 pb-20">
+
+        <!-- 1. INTRO & PHILOSOPHY -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="card md:col-span-3 bg-white">
+                <div class="border-l-4 border-indigo-500 pl-4 mb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Operational Philosophy</h2>
+                </div>
+                <p class="text-slate-600 text-lg leading-relaxed">
+                    This is not a hustle system. It is a sovereignty system. Your role is not to be the machine, but to design the machine. 
+                    We operate on a <strong>Two-Engine Design</strong>: separating creative expression (Engine A) from financial capture (Engine B) to ensure that monetization pressure never corrupts the vision.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
+                    <!-- Stat Cards -->
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">
+                        <div class="text-3xl font-bold text-indigo-600">Century</div>
+                        <div class="text-xs uppercase font-bold text-slate-400 mt-1">Time Horizon</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">
+                        <div class="text-3xl font-bold text-cyan-600">2</div>
+                        <div class="text-xs uppercase font-bold text-slate-400 mt-1">Distinct Engines</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">
+                        <div class="text-3xl font-bold text-orange-500">4</div>
+                        <div class="text-xs uppercase font-bold text-slate-400 mt-1">Autonomous Agents</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">
+                        <div class="text-3xl font-bold text-indigo-900">Zero</div>
+                        <div class="text-xs uppercase font-bold text-slate-400 mt-1">Dependencies</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. ARCHITECTURE (Five-Layer Stack) -->
+        <section id="architecture">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-slate-900">The Five-Layer Architecture</h2>
+                <p class="text-slate-600 mt-2">Explore the hierarchy of a sovereign system. Click each layer to reveal its core directive.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <!-- Interactive Stack -->
+                <div class="space-y-3">
+                    <div onclick="showLayer('core')" class="layer-btn cursor-pointer bg-indigo-900 text-white p-5 rounded shadow-lg border-l-4 border-orange-500 hover:bg-indigo-800">
+                        <h3 class="font-bold text-lg">1. Sovereign Core</h3>
+                        <p class="text-indigo-200 text-sm">Vision & Authority</p>
+                    </div>
+                    <div onclick="showLayer('throne')" class="layer-btn cursor-pointer bg-indigo-700 text-white p-5 rounded shadow-lg border-l-4 border-cyan-400 hover:bg-indigo-600">
+                        <h3 class="font-bold text-lg">2. The Throne (Holding)</h3>
+                        <p class="text-indigo-100 text-sm">IP Ownership & Asset Protection</p>
+                    </div>
+                    <div onclick="showLayer('vault')" class="layer-btn cursor-pointer bg-indigo-600 text-white p-5 rounded shadow-lg border-l-4 border-indigo-300 hover:bg-indigo-500">
+                        <h3 class="font-bold text-lg">3. The Vault (Engine A)</h3>
+                        <p class="text-indigo-100 text-sm">Creative Generation & Ideas</p>
+                    </div>
+                    <div onclick="showLayer('machines')" class="layer-btn cursor-pointer bg-cyan-600 text-white p-5 rounded shadow-lg border-l-4 border-white hover:bg-cyan-500">
+                        <h3 class="font-bold text-lg">4. Money Machines (Engine B)</h3>
+                        <p class="text-cyan-50 text-sm">Financial Conversion & Scale</p>
+                    </div>
+                    <div onclick="showLayer('defense')" class="layer-btn cursor-pointer bg-slate-600 text-white p-5 rounded shadow-lg border-l-4 border-slate-300 hover:bg-slate-500">
+                        <h3 class="font-bold text-lg">5. Defense Systems</h3>
+                        <p class="text-slate-200 text-sm">Risk, Legal & Continuity</p>
+                    </div>
+                </div>
+
+                <!-- Detail Panel -->
+                <div id="layer-detail" class="bg-white p-8 rounded-2xl shadow-xl border border-indigo-50 h-full flex flex-col justify-center transition-all duration-300">
+                    <div class="text-indigo-500 mb-2 font-bold uppercase tracking-wider text-sm" id="detail-subtitle">Select a Layer</div>
+                    <h3 class="text-3xl font-extrabold text-slate-900 mb-4" id="detail-title">Interactive Blueprint</h3>
+                    <p class="text-slate-600 text-lg leading-relaxed" id="detail-desc">
+                        Click on the architectural layers to the left to understand how the Sovereign Operating System protects your vision while automating your income.
+                    </p>
+                    <div class="mt-6 pt-6 border-t border-slate-100">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Primary Agent</span>
+                        <div class="text-indigo-600 font-bold text-xl mt-1" id="detail-agent">--</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. THE FREEDOM PROTOCOL (Interactive Validator) -->
+        <section id="protocol" class="bg-slate-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
+            <!-- Background Accent -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-orange-500 rounded-full blur-[100px] opacity-20"></div>
+
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-4">The Freedom Protocol</h2>
+                    <p class="text-slate-300 mb-8">
+                        Before any project moves from The Vault (Creative) to Money Machines (Financial), it must pass this validation. 
+                        If the answer is "No", it is a design flaw.
+                    </p>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                            <label class="block text-sm font-bold text-orange-400 mb-2">PROJECT NAME</label>
+                            <input type="text" id="project-name" placeholder="e.g., Star Seeds Workshop" class="w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white focus:outline-none focus:border-orange-500">
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <label class="flex items-center space-x-3 cursor-pointer group">
+                                <div class="relative">
+                                    <input type="checkbox" id="check-1" class="peer sr-only">
+                                    <div class="w-6 h-6 border-2 border-slate-500 rounded bg-slate-900 peer-checked:bg-green-500 peer-checked:border-green-500 transition-all"></div>
+                                </div>
+                                <span class="text-slate-300 group-hover:text-white transition">Can I step away for 30 days without collapse?</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer group">
+                                <div class="relative">
+                                    <input type="checkbox" id="check-2" class="peer sr-only">
+                                    <div class="w-6 h-6 border-2 border-slate-500 rounded bg-slate-900 peer-checked:bg-green-500 peer-checked:border-green-500 transition-all"></div>
+                                </div>
+                                <span class="text-slate-300 group-hover:text-white transition">Can the delivery be fully automated?</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer group">
+                                <div class="relative">
+                                    <input type="checkbox" id="check-3" class="peer sr-only">
+                                    <div class="w-6 h-6 border-2 border-slate-500 rounded bg-slate-900 peer-checked:bg-green-500 peer-checked:border-green-500 transition-all"></div>
+                                </div>
+                                <span class="text-slate-300 group-hover:text-white transition">Can it be paused indefinitely without liability?</span>
+                            </label>
+                        </div>
+
+                        <button onclick="runProtocol()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-lg shadow-lg shadow-orange-500/20 transition transform active:scale-95">
+                            VALIDATE PROJECT
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Result Panel -->
+                <div class="flex items-center justify-center bg-slate-800/50 rounded-2xl border border-slate-700 p-8 min-h-[300px]">
+                    <div id="protocol-result" class="text-center">
+                        <div class="text-6xl mb-4">🛡️</div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Ready to Validate</h3>
+                        <p class="text-slate-400">Enter details to test your sovereign alignment.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. DIGITAL VAULT & ASSETS (Charts) -->
+        <section id="vault" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Chart 1: Digital Vault Progress (Bar Chart) -->
+            <div class="card">
+                <div class="mb-4 flex justify-between items-end">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Digital Vault Completion</h3>
+                        <p class="text-sm text-slate-500">Break-Glass-In-Case-of-Emergency Pillars</p>
+                    </div>
+                    <span class="text-2xl font-bold text-indigo-600">65%</span>
+                </div>
+                <p class="text-slate-600 text-sm mb-4">
+                    Ensuring your legacy survives requires securing these six pillars. This chart tracks your current "Break Glass" readiness.
+                </p>
+                <div class="chart-container">
+                    <canvas id="vaultChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Asset Matrix (Scatter Plot) -->
+            <div class="card">
+                <div class="mb-4">
+                    <h3 class="text-xl font-bold text-slate-800">Asset Matrix Analysis</h3>
+                    <p class="text-sm text-slate-500">Mental Load vs. Return on Investment</p>
+                </div>
+                <p class="text-slate-600 text-sm mb-4">
+                    <strong>Goal:</strong> High ROI, Low Mental Load (Top Left). 
+                    <strong>Danger Zone:</strong> High Mental Load, Low ROI (Bottom Right).
+                </p>
+                <div class="chart-container">
+                    <canvas id="scatterChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. SYSTEM HEALTH (Radar Chart) -->
+        <section id="health" class="card bg-gradient-to-br from-white to-indigo-50 border border-indigo-100">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="p-4">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-4">System Health Monitor</h2>
+                    <p class="text-slate-600 mb-6">
+                        A sovereign life requires balance. We monitor five key dimensions to ensure the system serves the Architect, not the other way around.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="bg-indigo-100 text-indigo-600 p-1 rounded mr-3">◈</span>
+                            <div>
+                                <strong class="text-slate-800">Vision Control:</strong>
+                                <p class="text-sm text-slate-500">Do you own the decision rights?</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-indigo-100 text-indigo-600 p-1 rounded mr-3">◈</span>
+                            <div>
+                                <strong class="text-slate-800">Low Exposure:</strong>
+                                <p class="text-sm text-slate-500">Is your personal identity protected?</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-indigo-100 text-indigo-600 p-1 rounded mr-3">◈</span>
+                            <div>
+                                <strong class="text-slate-800">Automation Level:</strong>
+                                <p class="text-sm text-slate-500">Does it run while you sleep?</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center pt-12 pb-8 border-t border-slate-200">
+            <div class="inline-block p-4 border-2 border-slate-300 rounded-full mb-4 opacity-50">
+                <span class="text-2xl">🌲</span>
+            </div>
+            <p class="text-slate-500 font-bold uppercase tracking-widest text-xs">Legacy Grove Codex LLC © 2026</p>
+            <p class="text-slate-400 text-xs mt-2">Maximum Optionality. Minimal Exposure. Permanent Control.</p>
+        </footer>
+
+    </main>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- DATA OBJECTS ---
+        
+        const layerData = {
+            core: {
+                title: "1. Sovereign Core",
+                subtitle: "The Origin Point",
+                desc: "This is YOU, the human. The goal is to protect the Architect's vision and decision authority. You are not the brand. You are the source.",
+                agent: "Defense/Control Agent"
+            },
+            throne: {
+                title: "2. The Throne",
+                subtitle: "The Holding Structure",
+                desc: "Legal entities (LLCs/Trusts) that own the assets. Ensures all IP is owned by a private entity, never the person. Separates liability from identity.",
+                agent: "Legal/Admin Systems"
+            },
+            vault: {
+                title: "3. The Vault (Engine A)",
+                subtitle: "Creative Generator",
+                desc: "Where raw ideas, art, and content are born. Pure expression with zero pressure to monetize. Assets here are 'potential' energy.",
+                agent: "Idea Organizer (AI Agent 1)"
+            },
+            machines: {
+                title: "4. Money Machines (Engine B)",
+                subtitle: "Financial Converter",
+                desc: "Modular, scalable, and killable operating entities. They take assets from the Vault and turn them into cash flow via automation.",
+                agent: "Revenue Engine (AI Agent 3)"
+            },
+            defense: {
+                title: "5. Defense Systems",
+                subtitle: "Risk Monitor",
+                desc: "Monitors for legal, financial, and burnout risks. Flags high 'mental load'. Ensures the system serves the life, not vice versa.",
+                agent: "Defense/Control Agent"
+            }
+        };
+
+        // --- INTERACTIVITY FUNCTIONS ---
+
+        function showLayer(layerKey) {
+            // Update Text
+            const data = layerData[layerKey];
+            document.getElementById('detail-title').innerText = data.title;
+            document.getElementById('detail-subtitle').innerText = data.subtitle;
+            document.getElementById('detail-desc').innerText = data.desc;
+            document.getElementById('detail-agent').innerText = data.agent;
+
+            // Highlight active button (reset others)
+            // Ideally add/remove classes via JS loops, simplified here for single file clarity
+        }
+
+        function runProtocol() {
+            const name = document.getElementById('project-name').value || "Project";
+            const c1 = document.getElementById('check-1').checked;
+            const c2 = document.getElementById('check-2').checked;
+            const c3 = document.getElementById('check-3').checked;
+            const resultDiv = document.getElementById('protocol-result');
+
+            if (c1 && c2 && c3) {
+                // Success
+                resultDiv.innerHTML = `
+                    <div class="text-green-400 text-6xl mb-2">✓</div>
+                    <h3 class="text-2xl font-bold text-white">APPROVED</h3>
+                    <p class="text-green-200 mt-2">"${name}" is a sovereign asset.</p>
+                    <p class="text-slate-400 text-sm mt-1">Deploy to Engine B.</p>
+                `;
+            } else {
+                // Fail
+                resultDiv.innerHTML = `
+                    <div class="text-red-500 text-6xl mb-2">⚠</div>
+                    <h3 class="text-2xl font-bold text-white">DESIGN FLAW</h3>
+                    <p class="text-red-200 mt-2">"${name}" creates obligation.</p>
+                    <p class="text-slate-400 text-sm mt-1">Restructure or Abandon.</p>
+                `;
+            }
+        }
+
+        // --- CHART.JS HELPER: LABEL WRAPPING ---
+        function formatLabel(str, maxwidth) {
+            const sections = [];
+            const words = str.split(" ");
+            let temp = "";
+
+            words.forEach(function(item, index) {
+                if (temp.length > 0) {
+                    const concat = temp + ' ' + item;
+                    if (concat.length > maxwidth) {
+                        sections.push(temp);
+                        temp = "";
+                    } else {
+                        if (index === (words.length - 1)) {
+                            sections.push(concat);
+                            return;
+                        } else {
+                            temp = concat;
+                            return;
+                        }
+                    }
+                }
+                if (index === (words.length - 1)) {
+                    sections.push(item);
+                    return;
+                }
+                if (item.length < maxwidth) {
+                    temp = item;
+                } else {
+                    sections.push(item);
+                }
+            });
+            return sections;
+        }
+
+        // --- CHART.JS CONFIGURATIONS ---
+
+        // 1. Digital Vault Bar Chart
+        const ctxVault = document.getElementById('vaultChart').getContext('2d');
+        new Chart(ctxVault, {
+            type: 'bar',
+            data: {
+                labels: [
+                    formatLabel("Master Identity Access", 15),
+                    formatLabel("Financial Accounts", 15),
+                    formatLabel("Device Access Pins", 15),
+                    formatLabel("Critical Documents", 15),
+                    formatLabel("Business Domains", 15),
+                    formatLabel("Personal Legacy", 15)
+                ],
+                datasets: [{
+                    label: 'Completion %',
+                    data: [90, 85, 100, 40, 60, 15],
+                    backgroundColor: [
+                        '#4F46E5', '#4F46E5', '#4F46E5', // High completion (Indigo)
+                        '#F97316', '#F97316', // Medium (Orange)
+                        '#EF4444'  // Low (Red)
+                    ],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                let label = tooltipItems[0].label;
+                                if (Array.isArray(label)) return label.join(' '); // Fix Multiline Tooltip
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 2. Scatter Plot (Asset Matrix)
+        const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+        new Chart(ctxScatter, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Current Assets',
+                    data: [
+                        { x: 20, y: 90, name: "Digital Vault PDF" }, // Low Load, High ROI (Ideal)
+                        { x: 80, y: 30, name: "Consulting Calls" }, // High Load, Low ROI (Trap)
+                        { x: 40, y: 60, name: "Course Sales" },
+                        { x: 90, y: 80, name: "Live Workshops" },
+                        { x: 10, y: 10, name: "Research Notes" }
+                    ],
+                    backgroundColor: function(context) {
+                        const val = context.raw;
+                        if (!val) return '#94a3b8';
+                        if (val.x > 60) return '#EF4444'; // High Mental Load = Red
+                        if (val.y > 70) return '#0EA5E9'; // High ROI = Blue
+                        return '#F97316';
+                    },
+                    pointRadius: 8,
+                    pointHoverRadius: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw.name + ` (Load: ${context.raw.x}%, ROI: ${context.raw.y}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        title: { display: true, text: 'Mental Load (Effort)' },
+                        min: 0, max: 100 
+                    },
+                    y: { 
+                        title: { display: true, text: 'ROI (Revenue/Impact)' },
+                        min: 0, max: 100 
+                    }
+                }
+            }
+        });
+
+        // 3. Radar Chart (System Health)
+        const ctxRadar = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: [
+                    formatLabel("Vision Control", 12),
+                    formatLabel("Automation Level", 12),
+                    formatLabel("Financial Runway", 12),
+                    formatLabel("Identity Privacy", 12),
+                    formatLabel("Mental Peace", 12)
+                ],
+                datasets: [{
+                    label: 'Current Status',
+                    data: [90, 45, 70, 85, 60],
+                    fill: true,
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)', // Indigo transparent
+                    borderColor: '#4F46E5',
+                    pointBackgroundColor: '#4F46E5',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#4F46E5'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#e2e8f0' },
+                        grid: { color: '#e2e8f0' },
+                        pointLabels: {
+                            font: { size: 12, weight: 'bold' },
+                            color: '#475569'
+                        },
+                        ticks: { display: false, max: 100 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                let label = tooltipItems[0].label;
+                                if (Array.isArray(label)) return label.join(' ');
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
